@@ -1,8 +1,16 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 // 端到端自测：真 scratch-vm + 真 port + 真循环 + 本地脚本模型
 // 用法：node src/playground/ai/harness.test.mjs
 /* eslint-disable no-console */
 import {createRequire} from 'node:module';
-import {createScratchPort, collectSvgAssets, cacheSvgAssets, svgCanvasSize} from './port.js';
+import {createScratchPort, svgCanvasSize} from './port.js';
 import {createTools, osFromUserAgent, engineFromUserAgent} from './tools.js';
 import {createSession, toModelMessages} from './session.js';
 import {runTurn, executeTool, createSkipToken, STEP_LIMITS, clampMaxSteps, maxStepsOf} from './loop.js';
@@ -776,33 +784,6 @@ check('最后一枚造型删不得，且告诉模型先去加一枚',
     lastOne.isError !== true && cannotLast.isError === true && /only one/.test(cannotLast.content),
     String(cannotLast.content).slice(0, 100));
 
-// 快照要带的 SVG 资产：收集 + 塞回（刷新恢复靠它，见 project-persistence.jsx）。
-// 得赶在撤销之前做 —— 撤销会把 Ball 整个删掉，那时项目里就没有 AI 画的造型了。
-const collected = collectSvgAssets(vm);
-const collectedIds = Object.keys(collected);
-check('快照收集到项目里的 SVG 造型（内置的不收）',
-    collectedIds.length >= 1 && Object.values(collected).some(text => text.includes('circle')),
-    `收了 ${collectedIds.length} 份：${collectedIds.join(', ')}`);
-
-const freshVm = new (require(VM_PATH))();
-freshVm.attachStorage(new (require('@turbowarp/scratch-storage'))());
-freshVm.runtime.renderer = vm.runtime.renderer;
-await freshVm.loadProject(vm.toJSON());
-const lostInFresh = freshVm.runtime.targets.find(t => t.getName && t.getName() === 'Ball');
-check('不塞回资产的话，读档后造型是 broken 的（这正是要防的）',
-    !!lostInFresh && !!lostInFresh.getCostumes()[0].broken,
-    lostInFresh && `broken=${!!lostInFresh.getCostumes()[0].broken}`);
-
-const withAssetsVm = new (require(VM_PATH))();
-withAssetsVm.attachStorage(new (require('@turbowarp/scratch-storage'))());
-withAssetsVm.runtime.renderer = vm.runtime.renderer;
-cacheSvgAssets(withAssetsVm, collected);
-await withAssetsVm.loadProject(vm.toJSON());
-const restored = withAssetsVm.runtime.targets.find(t => t.getName && t.getName() === 'Ball');
-check('资产塞回去之后读档，造型不再是 broken（刷新恢复的关键一步）',
-    !!restored && !restored.getCostumes()[0].broken,
-    restored && `broken=${!!restored.getCostumes()[0].broken}`);
-
 // 撤销：新建角色 -> 删角色（造型那条路前面已经逐个验过：edit/new/delete 各自的 undo）
 check('undoAction 收得回新建角色',
     port.undoAction(created.undo) === true &&
@@ -834,8 +815,8 @@ const envLines = String(env.content).split('\n');
 check('xce_read_env 给出编辑器版本（无头测试里 webpack 没注入，退化成 unknown）',
     /^Version: XMUER Coding Engine (\d+\.\d+\.\d+|unknown)$/.test(envLines.find(l => l.startsWith('Version: ')) || ''),
     envLines.find(l => l.startsWith('Version: ')));
-check('xce_read_env 写明 GPL-3.0 许可证',
-    /^Licence: GPL-3\.0-only/.test(envLines.find(l => l.startsWith('Licence: ')) || ''),
+check('xce_read_env 写明 AGPL-3.0 许可证',
+    /^Licence: AGPL-3\.0-only/.test(envLines.find(l => l.startsWith('Licence: ')) || ''),
     envLines.find(l => l.startsWith('Licence: ')));
 check('网页版的官方页面是编辑器根地址',
     /^Official page: https:\/\/engine\.xmuer\.online\/ \(/.test(

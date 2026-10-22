@@ -1,4 +1,12 @@
 /*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
+/*
  * AI 终端面板样式。
  *
  * 规则取自 ZCode 的 DESIGN.md / 真实组件（packages/ui/src/v4/ConversationRowView.tsx、
@@ -974,15 +982,6 @@
 
 .turn {
     position: relative;
-}
-
-/* 回合脚注：这轮烧了多少 token（学 ZCode 的元信息行，灰化、小字、不抢眼） */
-.turnUsage {
-    margin: 2px 2px 10px;
-    color: var(--text-3);
-    font-size: 11px;
-    line-height: 16px;
-    user-select: text;
 }
 
 /* 提问那一行：气泡靠右，动作条在它左边 */

@@ -32,7 +32,7 @@ npm run build    # 生产构建，产物在 build/
 
 ## 许可证
 
-**GPL-3.0-only** — 见 [LICENSE](LICENSE)。
+**AGPL-3.0-only** — 见 [LICENSE](LICENSE)。
 
 本项目是 [TurboWarp scratch-gui](https://github.com/TurboWarp/scratch-gui)（GPL-3.0）的修改版分支，TurboWarp 的上游是 Scratch Foundation 的 [scratch-gui](https://github.com/scratchfoundation/scratch-gui)（AGPL-3.0）。桌面版在另一个仓库（Electron 壳，打包时引用本仓库的构建产物），不在本仓库内。
 

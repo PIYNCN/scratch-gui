@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * 给模型用的工具。
  *
@@ -1676,9 +1684,9 @@ ${notes.map(note => `:: note ${note.id}\n${note.text}`).join('\n\n')}`;
                     'the web version of XCE, running inside a browser page. Reading a web page with ' +
                         'xce_read_online is done from the page, so most sites block it (CORS).'}`];
                 lines.push(`Version: XMUER Coding Engine ${APP_VERSION || 'unknown'}`);
-                lines.push('Licence: GPL-3.0-only — free software under the GNU General Public License ' +
+                lines.push('Licence: AGPL-3.0-only — free software under the GNU Affero General Public License ' +
                     'version 3; the source is open, so the user may copy, change and share it, and a ' +
-                    'distributed copy has to keep the same licence.');
+                    'distributed or network-served copy has to keep the same licence.');
                 lines.push(`Official page: ${desktop ?
                     `${DESKTOP_URL} (the desktop client's own page — where it is downloaded from and what ` +
                         'each release changed)' :

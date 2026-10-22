@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 // xce_search 的无头自测：CaelLabSearch 结果整形（10 条 / 标题 60 字 / 摘要 2000 字 / 来源注明）
 // 与失败路径（限流、HTTP 错、非 JSON、跨域、超时）。用假 fetch，不联网。
 // 用法：node src/playground/ai/search.test.mjs

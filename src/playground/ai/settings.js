@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * 模型设置的存取。
  *
@@ -211,7 +219,7 @@ export const saveUserPrompt = text => {
 };
 
 /**
- * 模型默认的思考档位：接口声明过 default_level 就用它，否则用「高」
+ * 模型默认的思考档位：默认「低」（快、省），没有低档再按接口声明的 default_level / 高档
  * @param {string} providerId 供应商 id
  * @param {object} model 模型条目，可能没有
  * @returns {string} 档位 value；这家没有思考档位就是空串
@@ -219,6 +227,8 @@ export const saveUserPrompt = text => {
 const defaultEffort = (providerId, model) => {
     const thinking = thinkingOf(providerId, model ? model.id : '');
     if (!thinking) return '';
+    const low = thinking.levels.find(level => level.value === 'low');
+    if (low) return low.value;
     if (model && model.defaultLevel && thinking.levels.some(level => level.value === model.defaultLevel)) {
         return model.defaultLevel;
     }

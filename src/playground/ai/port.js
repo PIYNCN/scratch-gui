@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * ScratchPort 的浏览器实现：把 VM / Blockly 包成引擎无关的读写接口。
  *
@@ -47,58 +55,6 @@ export const svgCanvasSize = svg => {
     const width = read('width');
     const height = read('height');
     return width && height ? {width, height} : null;
-};
-
-/**
- * 项目里所有「非内置」SVG 造型的文本，按 assetId 索引。
- *
- * 自动保存的快照走 vm.toJSON()，那是纯 JSON —— 造型资产不在里面，刷新后 loadProject
- * 只能去 storage 找。AI 画的造型恰好只在内存 storage 里，所以快照必须**另外带上**这些文本
- * （见 project-persistence.jsx），恢复时先塞回 storage 再 loadProject。
- * @param {object} vm scratch-vm 实例
- * @returns {object} assetId -> SVG 文本
- */
-export const collectSvgAssets = vm => {
-    const out = {};
-    const runtime = vm && vm.runtime;
-    const storage = runtime && runtime.storage;
-    const targets = (runtime && runtime.targets) || [];
-    // 读不到 storage 就不知道哪些是内置资产，宁可不收也不要把内置的那几个抄进去
-    const builtin = storage && storage.defaultAssetId && storage.defaultAssetId.ImageVector;
-    if (!builtin) return out;
-    for (const target of targets) {
-        const costumes = target && target.getCostumes ? target.getCostumes() : [];
-        for (const costume of costumes) {
-            if (!costume || costume.dataFormat !== 'svg' || !costume.asset) continue;
-            if (!costume.assetId || costume.assetId === builtin) continue;
-            try {
-                out[costume.assetId] = costume.asset.decodeText();
-            } catch (e) {
-                // 读不出文本（资产是坏的）就算了，恢复时那个造型照样空着
-            }
-        }
-    }
-    return out;
-};
-
-/**
- * 把 collectSvgAssets 收上来的造型文本塞回 storage 的缓存。
- * @param {object} vm scratch-vm 实例
- * @param {object} assets assetId -> SVG 文本
- */
-export const cacheSvgAssets = (vm, assets) => {
-    const runtime = vm && vm.runtime;
-    const storage = runtime && runtime.storage;
-    if (!storage || !storage.cache || !assets) return;
-    for (const [assetId, svg] of Object.entries(assets)) {
-        if (typeof svg !== 'string' || !assetId) continue;
-        storage.cache(
-            storage.AssetType.ImageVector,
-            storage.DataFormat.SVG,
-            new TextEncoder().encode(svg),
-            assetId
-        );
-    }
 };
 
 // 新建角色先摆一个空白造型（编辑器自己的「绘制」按钮就是这条路：sb2 形状的空角色 +

@@ -89,7 +89,7 @@ const SBFileUploaderHOC = function (WrappedComponent) {
                                         // what MIME type they are saved with, so we have to use the most broad MIME
                                         // type here. Otherwise some users just won't be able to load files for no
                                         // fault of their own.
-                                        '*/*': ['.sb', '.sb2', '.sb3']
+                                        '*/*': ['.sb', '.sb2', '.sb3', '.xce']
                                     }
                                 }
                             ]
@@ -149,7 +149,7 @@ const SBFileUploaderHOC = function (WrappedComponent) {
                     // Don't update file handle until after confirming replace.
                     const handle = thisFileInput.handle;
                     if (handle) {
-                        if (this.fileToUpload.name.endsWith('.sb3')) {
+                        if (/\.(?:sb3|xce)$/i.test(this.fileToUpload.name)) {
                             this.props.onSetFileHandle(handle);
                         } else {
                             this.props.onSetFileHandle(null);
@@ -184,9 +184,9 @@ const SBFileUploaderHOC = function (WrappedComponent) {
         // used in step 6 below
         getProjectTitleFromFilename (fileInputFilename) {
             if (!fileInputFilename) return '';
-            // only parse title with valid scratch project extensions
-            // (.sb, .sb2, and .sb3)
-            const matches = fileInputFilename.match(/^(.*)\.sb[23]?$/);
+            // only parse title with valid project extensions
+            // (.sb, .sb2, .sb3, and the desktop build's .xce)
+            const matches = fileInputFilename.match(/^(.*)\.(?:sb[23]?|xce)$/i);
             if (!matches) return '';
             return matches[1].substring(0, 100); // truncate project title to max 100 chars
         }

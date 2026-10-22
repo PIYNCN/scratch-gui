@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /* 自动生成，请勿手改：由 build-tables.mjs 从 scratch-blocks 的积木定义、scratch-vm 的扩展定义、parse-sb3-blocks 的翻译键、default_toolbox.xml 抽出 */
 export default {
  "_generated": "2026-10-12",

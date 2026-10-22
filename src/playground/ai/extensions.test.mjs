@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 // 扩展积木（画笔/音乐/翻译…）的转换测试：文本 -> 积木 -> 交给 scratch-vm 校验
 // 用法：node src/playground/ai/extensions.test.mjs
 /* eslint-disable no-console */

@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * 模型接入层。设计照 dsh / ZCode 的模型层，三条规矩：
  *   1. 供应商差异是**数据**（base_url / 模型清单 / 思考字段形态），不是代码分支；
@@ -34,13 +42,13 @@ const thinkingLevels = (field, levels) => ({
 
 const LEVELS_4 = [
     ['none', '不思考（最快）', void 0],
-    ['low', '低', void 0],
-    ['high', '高（默认）', void 0],
+    ['low', '低（默认）', void 0],
+    ['high', '高', void 0],
     ['max', '最高', void 0]
 ];
 const LEVELS_3 = [
-    ['low', '低', void 0],
-    ['high', '高（默认）', void 0],
+    ['low', '低（默认）', void 0],
+    ['high', '高', void 0],
     ['max', '最高', void 0]
 ];
 const LEVELS_ONOFF = [

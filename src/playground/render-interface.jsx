@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * Copyright (C) 2021 Thomas Weber
  *
@@ -45,7 +53,6 @@ import InvalidEmbed from '../components/tw-invalid-embed/invalid-embed.jsx';
 import {APP_NAME} from '../lib/brand.js';
 import {getLocaleFromPath, getBCP47Code} from '../lib/locales-config.js';
 import AIPanel from './ai/panel.jsx';
-import ProjectPersistence from './project-persistence.jsx';
 import xceLogo from '../../static/xce-logo.png';
 
 import styles from './interface.css';
@@ -279,7 +286,6 @@ class Interface extends React.Component {
                         {...props}
                     />
                     {isEditor ? <AIPanel /> : null}
-                    {isEditor ? <ProjectPersistence /> : null}
                     {isHomepage ? null : (
                         <React.Fragment>
                             {isBrowserSupported() ? null : (

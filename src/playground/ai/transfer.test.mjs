@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 // transfer.js 的无头自测：导出形状 / 认格式 / 合并（覆盖同名、保留本地独有）/ 不带密钥那种
 // 用法：node src/playground/ai/transfer.test.mjs
 // 这一串模块在浏览器里读 document.cookie / localStorage，所以先搭桩再动态 import

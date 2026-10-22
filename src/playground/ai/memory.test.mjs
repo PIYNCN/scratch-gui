@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 // memory.js / user-skills.js 的无头自测（两个都是「本地表 + 上限」的小模块，放一个文件里测）
 // 用法：node src/playground/ai/memory.test.mjs
 /* eslint-disable no-console, no-undef */

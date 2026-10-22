@@ -13,9 +13,9 @@ import log from '../lib/log';
 // from sb-file-uploader-hoc.jsx
 const getProjectTitleFromFilename = fileInputFilename => {
     if (!fileInputFilename) return '';
-    // only parse title with valid scratch project extensions
-    // (.sb, .sb2, and .sb3)
-    const matches = fileInputFilename.match(/^(.*)\.sb[23]?$/);
+    // only parse title with valid project extensions
+    // (.sb, .sb2, .sb3, and the desktop build's .xce)
+    const matches = fileInputFilename.match(/^(.*)\.(?:sb[23]?|xce)$/i);
     if (!matches) return '';
     return matches[1].substring(0, 100); // truncate project title to max 100 chars
 };

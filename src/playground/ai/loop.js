@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * Agent 循环。
  *
@@ -233,20 +241,23 @@ export const runTurn = async ({
             }
         }
 
-        // 真实用量：prompt_tokens 就是这一轮发出去的前缀长度，上下文计量以它为准
+        // 真实用量：prompt_tokens 就是这一轮发出去的前缀长度，上下文计量以它为准。
+        // 缓存命中字段各家位置不同（DeepSeek 等 OpenAI 线在 prompt_tokens_details 里），
+        // 必须走 normalizeUsage，别直接读 reply.usage.cached_tokens。
         // 会话是本次对话独占的，不存在并发写；这条规则在这里是误报
         /* eslint-disable require-atomic-updates */
-        if (reply.usage && typeof reply.usage.prompt_tokens === 'number') {
-            session.lastPromptTokens = reply.usage.prompt_tokens;
+        const usage = normalizeUsage(reply.usage, reply.durationMs);
+        if (usage) {
+            session.lastPromptTokens = usage.promptTokens;
             // 会话累计（脚注命中率用）：没报缓存字段的请求不计进命中率的分母（promptCached）
             const stats = session.usageStats ||
                 (session.usageStats = {requests: 0, prompt: 0, promptCached: 0, cached: 0, completion: 0});
             stats.requests += 1;
-            stats.prompt += reply.usage.prompt_tokens;
-            stats.completion += reply.usage.completion_tokens || 0;
-            if (typeof reply.usage.cached_tokens === 'number') {
-                stats.cached += reply.usage.cached_tokens;
-                stats.promptCached += reply.usage.prompt_tokens;
+            stats.prompt += usage.promptTokens;
+            stats.completion += usage.completionTokens;
+            if (typeof usage.cachedTokens === 'number') {
+                stats.cached += usage.cachedTokens;
+                stats.promptCached += usage.promptTokens;
             }
         }
         session.lastUsage = reply.usage || session.lastUsage;
@@ -265,7 +276,7 @@ export const runTurn = async ({
             onEvent({
                 type: 'assistant',
                 message: assistantMessage,
-                usage: normalizeUsage(reply.usage, reply.durationMs)
+                usage
             });
         }
         if (looped) break;

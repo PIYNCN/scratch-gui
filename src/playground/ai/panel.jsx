@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * AI 终端面板。
  *
@@ -55,7 +63,6 @@ import {
     deleteConversation, setCurrentConversation, DROPPED_NOTE,
     planChatImport, applyChatImport
 } from './store.js';
-import {saveProjectNow} from '../project-persistence.jsx';
 import styles from './ai.css';
 
 // 量不到积木选择框大小时的兜底
@@ -695,19 +702,6 @@ const fmtTokens = n => {
     return `${Math.round(n)}`;
 };
 
-// 回合脚注照 ZCode 的口味：`↑ 12.4k (9.8k cached) · ↓ 356 tok · 41 tok/s`。
-// 缓存字段没报（小网关常见）就藏起括号那截，别写 0% 误导人；tok/s 是流式全程的体验速度
-const formatTurnUsage = usage => {
-    if (!usage || !usage.requests) return '';
-    let input = `↑ ${fmtTokens(usage.prompt)}`;
-    if (usage.cachedKnown) input += ` (${fmtTokens(usage.cached)} cached)`;
-    const parts = [input, `↓ ${fmtTokens(usage.completion)} tok`];
-    if (usage.durationMs > 0 && usage.completion > 0) {
-        parts.push(`${Math.round(usage.completion / (usage.durationMs / 1000))} tok/s`);
-    }
-    return parts.join(' · ');
-};
-
 const TurnChanges = ({changes, onRevert}) => {
     const [armed, setArmed] = useState(false);
     const timerRef = useRef(0);
@@ -920,10 +914,12 @@ ModelMenu.propTypes = {
 // 设置页
 // ---------------------------------------------------------------------------
 
-// 供应商换了 / 拉回清单之后，给个合理的默认思考档位（有 high 就 high）
+// 供应商换了 / 拉回清单之后，给个合理的默认思考档位（默认「低」，这家没有低档才退到 high）
 const defaultEffortOf = (providerId, modelId) => {
     const thinking = thinkingOf(providerId, modelId);
     if (!thinking) return '';
+    const low = thinking.levels.find(level => level.value === 'low');
+    if (low) return low.value;
     const preferred = thinking.levels.find(level => level.value === 'high');
     return preferred ? preferred.value : thinking.levels[thinking.levels.length - 1].value;
 };
@@ -2331,7 +2327,7 @@ HistoryView.propTypes = {
 // ---------------------------------------------------------------------------
 
 const AIPanel = ({vm, activeTabIndex = 0, theme = null}) => {
-    const [mode, setMode] = useState('ai');
+    const [mode, setMode] = useState('code');
     const [draft, setDraft] = useState('');
     const [busy, setBusy] = useState(false);
     const [status, setStatus] = useState('就绪');
@@ -2601,9 +2597,6 @@ const AIPanel = ({vm, activeTabIndex = 0, theme = null}) => {
                     } :
                     item
             )));
-            // 带撤销句柄的工具就是改了积木的：立刻落一份项目快照，不等自动保存的防抖，
-            // 防止「对话里说加了积木、刷新后项目却退回去」
-            if (event.result && event.result.undo) saveProjectNow();
             break;
         default:
             break;
@@ -2909,7 +2902,6 @@ const AIPanel = ({vm, activeTabIndex = 0, theme = null}) => {
         if (!action || !portRef.current) return;
         await portRef.current.undoAction(action);
         setItemsState(prev => prev.map(entry => (entry === item ? {...entry, undo: null} : entry)));
-        saveProjectNow();
         setStatus('已撤销');
     }, []);
 
@@ -2938,7 +2930,6 @@ const AIPanel = ({vm, activeTabIndex = 0, theme = null}) => {
         setItemsState(prev => prev
             .map(entry => (done.has(entry) ? {...entry, undo: null} : entry))
             .concat([{kind: 'notice', text: `已回退本轮变更：${summary}。`}]));
-        saveProjectNow();
         setStatus('已回退本轮变更');
         // 模型那边还记着「我写过这些积木」（工具返回里写着 Wrote …）。不告诉它已经删了，
         // 下一轮它会当成还在，用户说「继续」就什么都不做了 —— 插一句话把事实对齐。
@@ -3274,11 +3265,17 @@ const AIPanel = ({vm, activeTabIndex = 0, theme = null}) => {
     // 会话累计的缓存命中率（悬停浮层用）；没报缓存字段的请求不进分母，一个都没报就别算百分比
     const hitPct = usageStats && usageStats.promptCached > 0 ?
         Math.round(usageStats.cached / usageStats.promptCached * 100) : null;
-    const usageInputRow = usageStats && usageStats.requests ? (
+    // 输入是**每次请求各算一遍**的累计值（每步都要重发整份上下文），所以要拆开写清楚：
+    // 命中的、未命中的（按原价计费的那部分）、输出，别让一个大数字看着像算错了。
+    const usageRows = usageStats && usageStats.requests ? (
         hitPct === null ?
-            `输入 ${fmtTokens(usageStats.prompt)} tok（缓存未报）` :
-            `输入 ${fmtTokens(usageStats.prompt)} tok（命中 ${fmtTokens(usageStats.cached)} · ${hitPct}%）`
-    ) : '';
+            [`累计输入 ${fmtTokens(usageStats.prompt)} tok`, '缓存命中未报'] :
+            [
+                `累计输入 ${fmtTokens(usageStats.prompt)} tok`,
+                `命中 ${fmtTokens(usageStats.cached)} · ${hitPct}%`,
+                `未命中 ${fmtTokens(Math.max(usageStats.promptCached - usageStats.cached, 0))} tok`
+            ]
+    ).concat(`输出 ${fmtTokens(usageStats.completion)} tok`) : [];
 
     return (
         <div className={`${styles.aiRoot} ${theme && theme.isDark && theme.isDark() ? styles.aiDark : ''}`}>
@@ -3489,12 +3486,6 @@ const AIPanel = ({vm, activeTabIndex = 0, theme = null}) => {
                                                 onRevert={() => handleRevertTurn(turn)}
                                             />
                                         ) : null}
-                                        {/* 这轮烧了多少 token（学 ZCode 的回合脚注）。还在跑的不显示，等定稿 */}
-                                        {turn.usage && !turn.running ? (
-                                            <div className={styles.turnUsage}>
-                                                {formatTurnUsage(turn.usage)}
-                                            </div>
-                                        ) : null}
                                     </div>
                                 ))}
                             </div>
@@ -3561,18 +3552,18 @@ const AIPanel = ({vm, activeTabIndex = 0, theme = null}) => {
                                             >
                                                 {contextLabel}
                                             </span>
-                                            {/* 悬停展开会话累计（学 ZCode）：次数 / 输入含命中率 / 输出 */}
-                                            {usageStats && usageStats.requests ? (
+                                            {/* 悬停展开会话累计（学 ZCode）：次数 / 输入拆成命中与未命中 / 输出 */}
+                                            {usageRows.length ? (
                                                 <span className={styles.ctxPop}>
                                                     <span className={styles.ctxPopTitle}>
                                                         {`本会话累计 · ${usageStats.requests} 次请求`}
                                                     </span>
-                                                    <span className={styles.ctxPopRow}>
-                                                        {usageInputRow}
-                                                    </span>
-                                                    <span className={styles.ctxPopRow}>
-                                                        {`输出 ${fmtTokens(usageStats.completion)} tok`}
-                                                    </span>
+                                                    {usageRows.map(row => (
+                                                        <span
+                                                            className={styles.ctxPopRow}
+                                                            key={row}
+                                                        >{row}</span>
+                                                    ))}
                                                 </span>
                                             ) : null}
                                         </span>

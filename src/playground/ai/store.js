@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * 会话的本地持久化（多会话版）。
  *
@@ -151,6 +159,22 @@ export const loadConversationIndex = () => {
     };
 };
 
+// 旧版累计用量读错了缓存字段（DeepSeek 把命中数放在 prompt_tokens_details 里），
+// 存下来的 cached / promptCached 全是 0。条目里的用量本身是对的，从这里补算一次；
+// 之后的下一次自动保存会把补好的值写回库里。
+const healUsageStats = (stats, items) => {
+    if (!stats || stats.cached || stats.promptCached || !Array.isArray(items)) return stats || null;
+    let cached = 0;
+    let promptCached = 0;
+    for (const item of items) {
+        const usage = item && item.usage;
+        if (!usage || typeof usage.cachedTokens !== 'number') continue;
+        cached += usage.cachedTokens;
+        promptCached += usage.promptTokens || 0;
+    }
+    return promptCached ? {...stats, cached, promptCached} : stats;
+};
+
 // 把一条会话还原成面板用的形状（session 以 session.js 为准，toolCalls 不落盘）
 export const loadConversation = id => {
     if (!id) return null;
@@ -168,7 +192,7 @@ export const loadConversation = id => {
             lastUsage: conversation.lastUsage || null,
             compactCount: conversation.compactCount || 0,
             model: conversation.model || null,
-            usageStats: conversation.usageStats || null
+            usageStats: healUsageStats(conversation.usageStats, conversation.items)
         },
         items: Array.isArray(conversation.items) ? conversation.items : []
     };

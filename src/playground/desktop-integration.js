@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 Yunyun(云云) By 虚舟实验室(CaelLab) / XMUER Coding Engine
+ * Licensed under the GNU Affero General Public License, Version 3 (AGPL-3.0-only)
+ * https://www.gnu.org/licenses/agpl-3.0.txt
+ * Source: https://github.com/CaelLab-org/scratch-gui
+ * Project: https://engine.xmuer.online/
+ */
+
 /**
  * 桌面版（Electron 壳）桥接：把主进程的原生文件对话框实现成 File System Access API 的一个子集。
  *
@@ -13,51 +21,55 @@
 
 const preload = window.EditorPreload;
 
+const toBytes = chunk => {
+    if (chunk instanceof Uint8Array) {
+        return chunk;
+    }
+    if (chunk instanceof ArrayBuffer) {
+        return new Uint8Array(chunk);
+    }
+    if (ArrayBuffer.isView(chunk)) {
+        return new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+    }
+    // 正常只会收到字节，别的类型原样递过去让主进程报错，别在这儿吞掉
+    return chunk;
+};
+
+/**
+ * 主进程登记过的文件句柄。文件「用本程序打开」时也用它，所以类要能单独引出
+ * （见 playground/desktop-open.js）。
+ */
+export class DesktopFileHandle {
+    constructor (id, name) {
+        this.id = id;
+        this.name = name;
+    }
+    async getFile () {
+        const data = await preload.readFile(this.id);
+        return new File([data], this.name);
+    }
+    createWritable () {
+        const {id} = this;
+        return {
+            async write (chunk) {
+                await preload.writeFileChunk(id, toBytes(chunk));
+            },
+            async close () {
+                await preload.closeFile(id);
+            },
+            async abort () {
+                await preload.abortFile(id);
+            }
+        };
+    }
+}
+
 if (preload) {
     const abortError = () => {
         const error = new Error('用户取消了文件选择');
         error.name = 'AbortError';
         return error;
     };
-
-    const toBytes = chunk => {
-        if (chunk instanceof Uint8Array) {
-            return chunk;
-        }
-        if (chunk instanceof ArrayBuffer) {
-            return new Uint8Array(chunk);
-        }
-        if (ArrayBuffer.isView(chunk)) {
-            return new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
-        }
-        // 正常只会收到字节，别的类型原样递过去让主进程报错，别在这儿吞掉
-        return chunk;
-    };
-
-    class DesktopFileHandle {
-        constructor (id, name) {
-            this.id = id;
-            this.name = name;
-        }
-        async getFile () {
-            const data = await preload.readFile(this.id);
-            return new File([data], this.name);
-        }
-        createWritable () {
-            const {id} = this;
-            return {
-                async write (chunk) {
-                    await preload.writeFileChunk(id, toBytes(chunk));
-                },
-                async close () {
-                    await preload.closeFile(id);
-                },
-                async abort () {
-                    await preload.abortFile(id);
-                }
-            };
-        }
-    }
 
     window.showOpenFilePicker = async () => {
         const picked = await preload.pickOpenFile();
